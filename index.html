@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Publications</title>
+  <title>Publications – Supreme Attestation Commission</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -144,8 +144,8 @@
 <body>
 
 <header>
-  <h1 id="h-title">Publications</h1>
-  <p id="h-sub"></p>
+  <h1 id="h-title" onclick="secretClick()" style="cursor:default;user-select:none">Publications</h1>
+  <p id="h-sub">Supreme Attestation Commission</p>
   <button class="gear-btn" onclick="openSettings()" title="Settings">⚙</button>
 </header>
 
@@ -239,6 +239,8 @@ let file = null;
 
 /* ── BOOT ── */
 applyBranding();
+document.querySelector('.fab').style.display = cfg.upload ? 'block' : 'none';
+document.querySelector('.gear-btn').style.display = cfg.settings ? 'block' : 'none';
 loadPubs();
 
 function applyBranding() {
@@ -388,27 +390,51 @@ async function ghPut(path, b64, msg) {
 
 /* ── SETTINGS ── */
 function openSettings() {
-  document.getElementById('s-title').value = cfg.title || '';
-  document.getElementById('s-user').value  = cfg.user  || '';
-  document.getElementById('s-repo').value  = cfg.repo  || '';
-  document.getElementById('s-tok').value   = cfg.token || '';
+  document.getElementById('s-title').value  = cfg.title  || '';
+  document.getElementById('s-user').value   = cfg.user   || '';
+  document.getElementById('s-repo').value   = cfg.repo   || '';
+  document.getElementById('s-tok').value    = cfg.token  || '';
   document.getElementById('set-ov').classList.add('open');
 }
 function closeSettings() { document.getElementById('set-ov').classList.remove('open'); }
 function saveSettings() {
   cfg = {
-    title: document.getElementById('s-title').value.trim(),
-    user:  document.getElementById('s-user').value.trim(),
-    repo:  document.getElementById('s-repo').value.trim(),
-    token: document.getElementById('s-tok').value.trim()
+    title:  document.getElementById('s-title').value.trim(),
+    user:   document.getElementById('s-user').value.trim(),
+    repo:   document.getElementById('s-repo').value.trim(),
+    token:  document.getElementById('s-tok').value.trim(),
+    upload: cfg.upload
   };
   localStorage.setItem('pub-cfg', JSON.stringify(cfg));
   applyBranding();
+  document.querySelector('.fab').style.display = cfg.upload ? 'block' : 'none';
   closeSettings();
   loadPubs();
 }
 
 /* ── HELPERS ── */
+/* ── SECRET TOGGLE: 3× = settings, 5× = upload ── */
+let _clicks = 0, _ct;
+function secretClick() {
+  clearTimeout(_ct);
+  _clicks++;
+  if (_clicks === 3) {
+    cfg.settings = !cfg.settings;
+    localStorage.setItem('pub-cfg', JSON.stringify(cfg));
+    document.querySelector('.gear-btn').style.display = cfg.settings ? 'block' : 'none';
+    toast(cfg.settings ? '🔓 Settings visible' : '🔒 Settings hidden');
+  }
+  if (_clicks >= 5) {
+    _clicks = 0;
+    cfg.upload = !cfg.upload;
+    localStorage.setItem('pub-cfg', JSON.stringify(cfg));
+    document.querySelector('.fab').style.display = cfg.upload ? 'block' : 'none';
+    toast(cfg.upload ? '🔓 Upload enabled' : '🔒 Upload hidden');
+    return;
+  }
+  _ct = setTimeout(() => _clicks = 0, 1500);
+}
+
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg; el.style.opacity = '1';
